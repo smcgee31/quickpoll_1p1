@@ -1,0 +1,54 @@
+services:
+  web:
+    build:
+      context: .
+    environment:
+      DB_HOST: quickpoll_postgres
+      DB_USERNAME: quickpoll
+      DB_PASSWORD: password
+      RAILS_ENV: development
+      INST_DOMAIN: ${INST_DOMAIN:-inseng.test}
+      # Canvas signs the launch URL. This value must match what Canvas posts to.
+      PUBLIC_BASE_URL: http://quickpoll-1p1.${INST_DOMAIN:-inseng.test}
+    depends_on:
+      - quickpoll_postgres
+    volumes:
+      - .:/usr/src/app
+      - bundled-gems:/home/docker/.gem/ruby
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.quickpoll-1p1.rule=Host(`quickpoll-1p1.${INST_DOMAIN:-inseng.test}`)'
+    networks:
+      default:
+      inst:
+        aliases:
+          - 'quickpoll-1p1'
+          - 'quickpoll-1p1.${INST_DOMAIN:-inseng.test}'
+    logging:
+      options:
+        max-file: "5"
+        max-size: 1m
+
+  quickpoll_postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: quickpoll
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    networks:
+      - default
+    logging:
+      options:
+        max-file: "5"
+        max-size: 1m
+
+volumes:
+  bundled-gems: {}
+  pg-data: {}
+
+networks:
+  # Not the default network, so this postgres does not clash with Canvas' postgres.
+  inst:
+    external: true
+    name: 'inst_shared'

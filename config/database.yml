@@ -1,0 +1,20 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: <%= ENV.fetch("DB_HOST") { "localhost" } %>
+  username: <%= ENV.fetch("DB_USERNAME") { "quickpoll" } %>
+  password: <%= ENV.fetch("DB_PASSWORD") { "password" } %>
+
+development:
+  <<: *default
+  database: quickpoll_1p1_development
+
+test:
+  <<: *default
+  database: quickpoll_1p1_test
+
+production:
+  <<: *default
+  database: quickpoll_1p1_production
+  password: <%= ENV["QUICKPOLL_DATABASE_PASSWORD"] %>
