@@ -9,7 +9,7 @@ Plan: ../../zscratchpads/quickpoll_1p1_to_1p3_plan.md (Developer/zscratchpads)
 - [ ] Stage 4: session, roles, polls  <- NEXT. First step: wire verifier + guard into LaunchController (verify signature BEFORE the guard saves the nonce)
 - [ ] Stage 5: Basic Outcomes
 - [ ] Stage 6: Content-Item (optional)
-- [ ] Stage 7: migrate to 1.3
+- [ ] Stage 7: migrate to 1.3 (see "Stage 7 plan: keep a working 1.1 copy" below)
 
 ## Run it
 - `docker compose up -d` then open http://quickpoll-1p1.inseng.test/lti/config
@@ -18,3 +18,11 @@ Plan: ../../zscratchpads/quickpoll_1p1_to_1p3_plan.md (Developer/zscratchpads)
 
 ## Stage 4 notes
 - Canvas `roles` comes in two formats. A teacher sends `Instructor`. An account admin with no enrollment sends `urn:lti:instrole:ims/lis/Administrator,urn:lti:sysrole:ims/lis/SysAdmin`, and only `ext_roles` has Instructor. Write LtiRoles to read the part after the last "/" and spec all three cases.
+
+## Stage 7 plan: keep a working 1.1 copy
+Steve wants the 1.1 app to stay working. The 1.3 app is a copy of this repo, and the copy gets migrated.
+1. Finish Stages 4 to 6 here. Run `git tag v1.1-final`.
+2. `pg_dump` the 1.1 database. The migration needs real 1.1 users, polls, and votes to find again through the `lti1p1` claim (`lti_users.lti1p1_user_id`).
+3. `git clone quickpoll_1p1 quickpoll_1p3`. Do not use `cp -r`. Point `origin` at a NEW GitHub repo.
+4. In the copy, change the hostname so both apps run together: `docker-compose.yml` (Traefik rule, router name, both network aliases) and `config.hosts` in `config/environments/development.rb`. Use `quickpoll-1p3.inseng.test`.
+5. Restore the dump into the copy's Postgres. Then migrate the code.
