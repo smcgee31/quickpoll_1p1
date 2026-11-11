@@ -22,6 +22,10 @@ module Lti
       end
     end
 
+    def can_create_polls?
+      session[:can_create_polls] == true
+    end
+
     # Rails sets X-Frame-Options: SAMEORIGIN by default. That blocks the Canvas iframe.
     def allow_framing
       response.headers.delete("X-Frame-Options")

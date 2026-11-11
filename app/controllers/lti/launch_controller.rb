@@ -9,6 +9,7 @@ module Lti
         reset_session
         session[:lti_user_id] = records.user.id
         session[:lti_context_id] = records.context.id
+        session[:can_create_polls] = Lti1p1::Roles.new(request.request_parameters).can_create_polls?
 
         render plain: "Launch verified. Hello, #{records.user.name}. Course: #{records.context.title}."
       else
