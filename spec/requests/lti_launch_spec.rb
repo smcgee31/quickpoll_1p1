@@ -18,6 +18,7 @@ require "rails_helper"
 # Canvas signs launches with a real key, so these specs sign their own launches. The helper below
 # is a plain copy of the OAuth recipe. The verifier spec already checks the real algorithm
 # against launches that Canvas signed.
+
 RSpec.describe "POST /lti/launch", type: :request do
   include ActiveSupport::Testing::TimeHelpers
 
@@ -50,7 +51,7 @@ RSpec.describe "POST /lti/launch", type: :request do
 
   def sign(params, secret)
     encode = ->(value) { ERB::Util.url_encode(value.to_s) }
-    pairs = params.map { |k, v| [encode.(k), encode.(v)] }.sort.map { |k, v| "#{k}=#{v}" }.join("&")
+    pairs = params.map { |k, v| [ encode.(k), encode.(v) ] }.sort.map { |k, v| "#{k}=#{v}" }.join("&")
     base = "POST&#{encode.(launch_url)}&#{encode.(pairs)}"
     Base64.strict_encode64(OpenSSL::HMAC.digest("SHA1", "#{encode.(secret)}&", base))
   end
@@ -77,6 +78,33 @@ RSpec.describe "POST /lti/launch", type: :request do
       post "/lti/launch", params: signed_params
 
       expect(response.headers["X-Frame-Options"]).to be_nil
+    end
+  end
+
+  context "with a verified launch, the records" do
+    it "creates the user and the course for the consumer" do
+      expect { post "/lti/launch", params: signed_params }
+        .to change { consumer.lti_users.count }.by(1)
+        .and change { consumer.lti_contexts.count }.by(1)
+    end
+
+    it "names the person and the course on the page" do
+      post "/lti/launch", params: signed_params
+
+      expect(response.body).to include("Test Teacher 1")
+      expect(response.body).to include("Test Course 1")
+    end
+
+    it "does not create a second user when the same person launches again" do
+      post "/lti/launch", params: signed_params
+
+      expect { post "/lti/launch", params: signed_params }.not_to change(LtiUser, :count)
+    end
+
+    it "answers 400 when a verified launch has no user_id" do
+      post "/lti/launch", params: signed_params({ "user_id" => "" })
+
+      expect(response).to have_http_status(:bad_request)
     end
   end
 

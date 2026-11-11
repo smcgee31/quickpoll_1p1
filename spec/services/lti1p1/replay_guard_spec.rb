@@ -17,6 +17,7 @@ require "rails_helper"
 #
 # Call order in the controller (Stage 4): check the signature first, then call accept?.
 # If you save the nonce before the signature check, anyone can fill the table with fake nonces.
+
 RSpec.describe Lti1p1::ReplayGuard do
   let(:now) { Time.zone.at(1_800_000_000) }
   let(:consumer) { create(:lti_consumer) }
@@ -105,11 +106,11 @@ RSpec.describe Lti1p1::ReplayGuard do
 
     context "with missing or broken params" do
       [
-        ["no timestamp", { "oauth_timestamp" => nil }],
-        ["an empty timestamp", { "oauth_timestamp" => "" }],
-        ["a timestamp that is not a number", { "oauth_timestamp" => "yesterday" }],
-        ["no nonce", { "oauth_nonce" => nil }],
-        ["an empty nonce", { "oauth_nonce" => "" }]
+        [ "no timestamp", { "oauth_timestamp" => nil } ],
+        [ "an empty timestamp", { "oauth_timestamp" => "" } ],
+        [ "a timestamp that is not a number", { "oauth_timestamp" => "yesterday" } ],
+        [ "no nonce", { "oauth_nonce" => nil } ],
+        [ "an empty nonce", { "oauth_nonce" => "" } ]
       ].each do |description, overrides|
         it "rejects a launch with #{description}" do
           guard = guard_for(params: params.merge(overrides))

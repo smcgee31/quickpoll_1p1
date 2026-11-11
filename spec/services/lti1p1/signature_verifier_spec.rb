@@ -11,6 +11,7 @@ require "rails_helper"
 #
 # `params` is every launch param, including oauth_signature. The verifier drops oauth_signature itself.
 # The fixtures are real Canvas launches. The expected signatures came from Canvas, not from this code.
+
 RSpec.describe Lti1p1::SignatureVerifier do
   def fixture(name)
     JSON.parse(Rails.root.join("spec/fixtures/lti1p1/#{name}_launch.json").read)
