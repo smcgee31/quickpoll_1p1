@@ -6,7 +6,7 @@ Plan: ../../zscratchpads/quickpoll_1p1_to_1p3_plan.md (Developer/zscratchpads)
 - [x] Stage 2: scaffold, schema, models, XML config, seed (code done)
 - [x] Stage 2: XML installed in Canvas, launch reached the stub
 - [x] Stage 3: Lti1p1::SignatureVerifier (19 specs) and Lti1p1::ReplayGuard (15 specs), both in app/services/lti1p1
-- [ ] Stage 4: session, roles, polls  <- NEXT. First step: wire verifier + guard into LaunchController (verify signature BEFORE the guard saves the nonce)
+- [ ] Stage 4: session, roles, polls  <- IN PROGRESS. Done: LaunchController checks + LaunchRecords + session (/lti/me). Next: LtiRoles (3 spec cases), then poll CRUD/vote pages
 - [ ] Stage 5: Basic Outcomes
 - [ ] Stage 6: Content-Item (optional)
 - [ ] Stage 7: migrate to 1.3 (see "Stage 7 plan: keep a working 1.1 copy" below)
@@ -18,6 +18,8 @@ Plan: ../../zscratchpads/quickpoll_1p1_to_1p3_plan.md (Developer/zscratchpads)
 
 ## Stage 4 notes
 - Canvas `roles` comes in two formats. A teacher sends `Instructor`. An account admin with no enrollment sends `urn:lti:instrole:ims/lis/Administrator,urn:lti:sysrole:ims/lis/SysAdmin`, and only `ext_roles` has Instructor. Write LtiRoles to read the part after the last "/" and spec all three cases.
+
+- Session cookie in an iframe: it works locally (canvas-web.inseng.test and quickpoll-1p1.inseng.test share a domain). In production Canvas and the tool are different sites, and browsers block third-party cookies. It needs `same_site: :none` + `secure: true`, and Safari blocks it anyway. Come back to this in Stage 7 (1.3 has the same problem).
 
 ## Stage 7 plan: keep a working 1.1 copy
 Steve wants the 1.1 app to stay working. The 1.3 app is a copy of this repo, and the copy gets migrated.

@@ -7,6 +7,21 @@ module Lti
 
     private
 
+    def current_lti_user
+      @current_lti_user ||= LtiUser.find_by(id: session[:lti_user_id])
+    end
+
+    def current_lti_context
+      @current_lti_context ||= LtiContext.find_by(id: session[:lti_context_id])
+    end
+
+    def require_launch
+      unless current_lti_user && current_lti_context
+        reset_session
+        render plain: "Launch required.", status: :unauthorized
+      end
+    end
+
     # Rails sets X-Frame-Options: SAMEORIGIN by default. That blocks the Canvas iframe.
     def allow_framing
       response.headers.delete("X-Frame-Options")

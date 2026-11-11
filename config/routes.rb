@@ -4,5 +4,7 @@ Rails.application.routes.draw do
   namespace :lti do
     get "config", to: "configuration#show", defaults: { format: :xml }, as: :configuration
     post "launch", to: "launch#create", as: :launch
+
+    get "me", to: "sessions#show", as: :me
   end
 end

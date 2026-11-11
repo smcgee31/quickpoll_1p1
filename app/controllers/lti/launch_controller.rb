@@ -6,6 +6,10 @@ module Lti
       records = Lti1p1::LaunchRecords.new(consumer: @consumer, params: request.request_parameters)
 
       if records.call
+        reset_session
+        session[:lti_user_id] = records.user.id
+        session[:lti_context_id] = records.context.id
+
         render plain: "Launch verified. Hello, #{records.user.name}. Course: #{records.context.title}."
       else
         Rails.logger.warn("[lti launch] rejected: #{records.error}")
