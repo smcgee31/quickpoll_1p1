@@ -11,7 +11,7 @@ module Lti
         session[:lti_context_id] = records.context.id
         session[:can_create_polls] = Lti1p1::Roles.new(request.request_parameters).can_create_polls?
 
-        render plain: "Launch verified. Hello, #{records.user.name}. Course: #{records.context.title}."
+        redirect_to lti_polls_path, status: :see_other
       else
         Rails.logger.warn("[lti launch] rejected: #{records.error}")
         render plain: "Launch failed.", status: :bad_request

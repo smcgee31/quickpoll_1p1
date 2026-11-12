@@ -1,7 +1,7 @@
 # Sends one signed fake launch to the running app, twice, with the same nonce.
 # Run inside the web container:
 #   rails runner zscratchpads/replay_demo.rb
-# Expect: first POST 200 "Launch verified.", second POST 401 "Launch rejected."
+# Expect: first POST 303 (redirect to /lti/polls), second POST 401 "Launch rejected."
 # It uses the seeded consumer (key "key", secret "secret") and fake user data only.
 require "net/http"
 

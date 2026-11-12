@@ -6,5 +6,7 @@ Rails.application.routes.draw do
     post "launch", to: "launch#create", as: :launch
 
     get "me", to: "sessions#show", as: :me
+
+    resources :polls, only: %i[index create]
   end
 end

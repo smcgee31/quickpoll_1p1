@@ -6,7 +6,7 @@ Plan: ../../zscratchpads/quickpoll_1p1_to_1p3_plan.md (Developer/zscratchpads)
 - [x] Stage 2: scaffold, schema, models, XML config, seed (code done)
 - [x] Stage 2: XML installed in Canvas, launch reached the stub
 - [x] Stage 3: Lti1p1::SignatureVerifier (19 specs) and Lti1p1::ReplayGuard (15 specs), both in app/services/lti1p1
-- [ ] Stage 4: session, roles, polls  <- IN PROGRESS. Done: LaunchController checks + LaunchRecords + session (/lti/me) + Lti1p1::Roles (25 specs) + role in the session (step 5). Next: require_poll_creator guard + poll CRUD/vote pages
+- [ ] Stage 4: session, roles, polls  <- IN PROGRESS. Done: LaunchController checks + LaunchRecords + session (/lti/me) + Lti1p1::Roles (25 specs) + role in the session (step 5). + poll page (list + create, require_poll_creator, launch redirects to /lti/polls). Next: voting (step 7: one vote per person, learners vote, results)
 - [ ] Stage 5: Basic Outcomes
 - [ ] Stage 6: Content-Item (optional)
 - [ ] Stage 7: migrate to 1.3 (see "Stage 7 plan: keep a working 1.1 copy" below)

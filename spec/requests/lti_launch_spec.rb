@@ -8,8 +8,8 @@ require "rails_helper"
 #   2. Check the signature with Lti1p1::SignatureVerifier, using that consumer's shared_secret.
 #   3. Only then call Lti1p1::ReplayGuard#accept?. (A bad signature must not save a nonce.)
 #   4. If any step fails, answer 401 and show nothing from the launch.
-#   5. If all steps pass, answer 200 with a body that contains "Launch verified".
-#      Creating the user and the course comes in the next step. Do not do it here.
+#   5. If all steps pass, save the records, start the session, and redirect to /lti/polls (303).
+#      (Before step 6 of Stage 4 this answered 200 with "Launch verified". The poll page replaced it.)
 #
 # The URL for step 2 is NOT request.url. Canvas signs the URL it was given, and a proxy can change
 # the scheme or host on the way in. Build it from Rails.configuration.x.public_base_url plus
@@ -23,11 +23,11 @@ RSpec.describe "POST /lti/launch", type: :request do
   include_context "with signed launches"
 
   context "with a launch Canvas signed correctly" do
-    it "answers 200 and says the launch is verified" do
+    it "redirects to the poll page with 303" do
       post "/lti/launch", params: signed_params
 
-      expect(response).to have_http_status(:ok)
-      expect(response.body).to include("Launch verified")
+      expect(response).to have_http_status(:see_other)
+      expect(response).to redirect_to("/lti/polls")
     end
 
     it "saves the nonce" do
@@ -37,7 +37,7 @@ RSpec.describe "POST /lti/launch", type: :request do
     it "accepts a launch where Canvas left ?placement on the URL and also put it in the body" do
       post "/lti/launch?placement=course_navigation", params: signed_params({ "placement" => "course_navigation" })
 
-      expect(response).to have_http_status(:ok)
+      expect(response).to have_http_status(:see_other)
     end
 
     it "allows the response to render in a Canvas iframe" do
@@ -52,13 +52,6 @@ RSpec.describe "POST /lti/launch", type: :request do
       expect { post "/lti/launch", params: signed_params }
         .to change { consumer.lti_users.count }.by(1)
         .and change { consumer.lti_contexts.count }.by(1)
-    end
-
-    it "names the person and the course on the page" do
-      post "/lti/launch", params: signed_params
-
-      expect(response.body).to include("Test Teacher 1")
-      expect(response.body).to include("Test Course 1")
     end
 
     it "does not create a second user when the same person launches again" do
@@ -112,7 +105,7 @@ RSpec.describe "POST /lti/launch", type: :request do
       params = signed_params
 
       post "/lti/launch", params: params
-      expect(response).to have_http_status(:ok)
+      expect(response).to have_http_status(:see_other)
 
       post "/lti/launch", params: params
       expect(response).to have_http_status(:unauthorized)

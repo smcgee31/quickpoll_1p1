@@ -1,0 +1,32 @@
+<p>Signed in as <%= current_lti_user.name %> in course <%= current_lti_context.title %>.</p>
+<% if @polls.empty? %>
+  <p>No polls yet.</p>
+<% else %>
+  <% @polls.each do |poll| %>
+    <p><strong><%= poll.question %></strong></p>
+    <ul>
+      <% poll.options.each do |option| %>
+        <li><%= option %></li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>
+<% if can_create_polls? %>
+  <h2>New poll</h2>
+  <% @poll.errors.full_messages.each do |message| %>
+  <p><%= message %></p>
+<% end %>
+  <%= form_with scope: :poll, url: lti_polls_path do |form| %>
+    <p>
+      <%= form.label :question %><br>
+      <%= form.text_field :question %>
+    </p>
+    <p>
+      <%= form.label :options_text, "Options (one per line)" %><br>
+      <%= form.text_area :options_text %>
+    </p>
+    <p>
+      <%= form.submit "Create Poll" %>
+    </p>
+  <% end %>
+<% end %>

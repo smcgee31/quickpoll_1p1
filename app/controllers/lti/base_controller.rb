@@ -5,6 +5,8 @@ module Lti
     # before_action, not after_action. A before_action that renders (the 401) skips every after_action.
     before_action :allow_framing
 
+    helper_method :can_create_polls?, :current_lti_user, :current_lti_context
+
     private
 
     def current_lti_user
@@ -20,6 +22,10 @@ module Lti
         reset_session
         render plain: "Launch required.", status: :unauthorized
       end
+    end
+
+    def require_poll_creator
+      render plain: "Poll creators only.", status: :forbidden unless can_create_polls?
     end
 
     def can_create_polls?
