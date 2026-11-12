@@ -7,6 +7,8 @@ Rails.application.routes.draw do
 
     get "me", to: "sessions#show", as: :me
 
-    resources :polls, only: %i[index create]
+    resources :polls, only: %i[index create] do
+      resources :votes, only: :create
+    end
   end
 end

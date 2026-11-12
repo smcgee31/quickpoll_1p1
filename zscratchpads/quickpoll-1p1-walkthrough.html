@@ -182,7 +182,7 @@
           <li>Your app runs the same function on what it received. A match means Canvas sent the form and nobody changed it.</li>
           <li>No match means reject the launch.</li>
         </ul>
-        <div class="callout callout-ok" style="margin-top:14px;"><strong>The app now checks every launch.</strong> It looks up the consumer key, checks the signature, then checks the timestamp and nonce. Any failure gets a 401. A launch that passes saves the person and the course. A verified launch also starts a session, so the next page knows who you are and whether they may create polls. A verified launch then redirects to the poll page. An instructor or a TA creates polls there. Everyone in the course sees them. The specs pass. Voting comes next.</div>
+        <div class="callout callout-ok" style="margin-top:14px;"><strong>The app now checks every launch.</strong> It looks up the consumer key, checks the signature, then checks the timestamp and nonce. Any failure gets a 401. A launch that passes saves the person and the course. A verified launch also starts a session, so the next page knows who you are and whether they may create polls. A verified launch then redirects to the poll page. An instructor or a TA creates polls there. Everyone in the course sees them and votes once per poll. A person sees the counts after voting. A poll creator always sees them. The specs pass. Grade passback is next.</div>
       </div>
     </div>
 
@@ -191,7 +191,7 @@
       <div class="step done"><div class="n">Stage 1</div><div class="t">Capture a launch</div><div class="s">teacher + student</div></div>
       <div class="step done"><div class="n">Stage 2</div><div class="t">Scaffold + config</div><div class="s">launch reaches the stub</div></div>
       <div class="step done"><div class="n">Stage 3</div><div class="t">Verify the launch</div><div class="s">signature + replay guard</div></div>
-      <div class="step now"><div class="n">Stage 4</div><div class="t">Session + polls</div><div class="s">records, session, roles, poll list and create done; voting next</div></div>
+      <div class="step now"><div class="n">Stage 4</div><div class="t">Session + polls</div><div class="s">records, session, roles, polls, voting done</div></div>
       <div class="step"><div class="n">Stage 5</div><div class="t">Grade passback</div></div>
       <div class="step"><div class="n">Stage 6</div><div class="t">Content-Item</div><div class="s">optional</div></div>
       <div class="step"><div class="n">Stage 7</div><div class="t">Migrate to 1.3</div></div>
@@ -266,17 +266,19 @@
           <tr><td class="path"><code>app/controllers/lti/configuration_controller.rb</code></td><td>Builds the XML you pasted into Canvas.</td><td>2</td></tr>
           <tr><td class="path"><code>app/views/lti/configuration/show.xml.erb</code></td><td>The XML template.</td><td>2</td></tr>
           <tr><td class="path"><code>config/initializers/lti.rb</code></td><td>Reads <code>PUBLIC_BASE_URL</code>. The signature check needs it.</td><td>2</td></tr>
-          <tr><td class="path"><code>app/models/*.rb</code> and <code>db/migrate/*.rb</code></td><td>Six tables. A launch writes three of them. The poll page writes <code>polls</code>. Votes come next.</td><td>2, 3, 4</td></tr>
+          <tr><td class="path"><code>app/models/*.rb</code> and <code>db/migrate/*.rb</code></td><td>Six tables. A launch writes three of them. The poll page writes <code>polls</code>. A vote writes <code>votes</code>.</td><td>2, 3, 4</td></tr>
           <tr><td class="path"><code>Dockerfile</code> and <code>docker-compose.yml</code></td><td>Run the app and join the Canvas network.</td><td>2</td></tr>
           <tr><td class="path"><code>app/services/lti1p1/signature_verifier.rb</code></td><td>Recomputes the OAuth signature and compares it. 19 specs.</td><td>3</td></tr>
           <tr><td class="path"><code>app/services/lti1p1/replay_guard.rb</code></td><td>Rejects an old timestamp or a repeated nonce. Saves the nonce. 15 specs.</td><td>3</td></tr>
           <tr><td class="path"><code>app/services/lti1p1/launch_records.rb</code></td><td>Finds or creates the <code>LtiUser</code> and <code>LtiContext</code> for a launch. 14 specs.</td><td>4</td></tr>
           <tr><td class="path"><code>app/controllers/lti/polls_controller.rb</code></td><td><code>GET /lti/polls</code> lists the polls of the course. <code>POST /lti/polls</code> creates one. Only an instructor or a TA may create. Forgery protection is on.</td><td>4</td></tr>
-          <tr><td class="path"><code>app/views/lti/polls/index.html.erb</code></td><td>The poll page: who you are, the polls, and the New poll form for poll creators.</td><td>4</td></tr>
+          <tr><td class="path"><code>app/controllers/lti/votes_controller.rb</code></td><td><code>POST /lti/polls/:poll_id/votes</code>. Finds the poll in the launched course only (404 otherwise). The voter comes from the session. One vote per person per poll. Always redirects back with 303.</td><td>4</td></tr>
+          <tr><td class="path"><code>app/views/lti/polls/index.html.erb</code></td><td>The poll page: who you are, the polls, a vote form or the counts, and the New poll form for poll creators.</td><td>4</td></tr>
           <tr><td class="path"><code>app/services/lti1p1/roles.rb</code></td><td>Reads <code>roles</code> and <code>ext_roles</code>, keeps the text after the last <code>/</code>, and answers <code>instructor?</code>, <code>learner?</code>, <code>teaching_assistant?</code>, and <code>can_create_polls?</code>. 25 specs.</td><td>4</td></tr>
           <tr><td class="path"><code>spec/support/signed_launches.rb</code></td><td>Shared helper. Signs a fake launch so request specs can POST one.</td><td>4</td></tr>
           <tr><td class="path"><code>spec/requests/lti_launch_spec.rb</code></td><td>The launch endpoint end to end: accept, reject, save records.</td><td>3, 4</td></tr>
           <tr><td class="path"><code>spec/requests/lti_polls_spec.rb</code></td><td>The poll page: who sees the form, who may create, the course comes from the session, errors, forgery protection.</td><td>4</td></tr>
+          <tr><td class="path"><code>spec/requests/lti_votes_spec.rb</code></td><td>Voting: one vote per person, counts after voting, the course and the voter come from the session, forgery protection.</td><td>4</td></tr>
           <tr><td class="path"><code>spec/requests/lti_roles_session_spec.rb</code></td><td>A launch stores the poll-creator answer in the session. <code>/lti/me</code> shows it.</td><td>4</td></tr>
         </tbody>
       </table>
@@ -840,6 +842,7 @@ rspec spec/services</code></pre>
       <div class="callout callout-warn"><strong>A param can arrive twice.</strong> With "OAuth Compliant" off, Canvas leaves <code>?placement=...</code> on the URL and also copies it into the body. It signs the value once. A literal reading of RFC 5849 counts it twice and fails. One spec covers this. Fix it by treating identical name and value pairs as one.</div>
       <div class="callout callout-warn"><strong>Roles come in two shapes.</strong> A teacher sends <code>Instructor</code>. An admin who is not enrolled sends URNs like <code>urn:lti:instrole:ims/lis/Administrator</code>, and only <code>ext_roles</code> lists Instructor. Read the text after the last <code>/</code> in each entry. A real TA sends <code>TeachingAssistant</code> in <code>roles</code> and also <code>Instructor</code> in <code>ext_roles</code>, so a TA counts as an instructor. The poll pages ask <code>can_create_polls?</code>.</div>
       <div class="callout callout-warn"><strong>Forgery protection: off for the launch, on for the poll form.</strong> <code>BaseController</code> skips it, because Canvas posts the launch from another origin and the signature is the proof. The poll form is a normal form from this app, so <code>PollsController</code> turns it back on with <code>protect_from_forgery with: :exception</code>. Rails' test setup disables it, so one spec switches it on. A live check showed the token works inside the Canvas iframe.</div>
+      <div class="callout callout-warn"><strong>Find a record through the session's course.</strong> <code>current_lti_context.polls.find(id)</code> answers 404 for a poll in another course. <code>Poll.find(id)</code> would let a person vote in any course by guessing an id. A spec checks this.</div>
       <div class="callout callout-warn"><strong>Views cannot call private controller methods.</strong> <code>can_create_polls?</code>, <code>current_lti_user</code>, and <code>current_lti_context</code> are private in <code>BaseController</code>. A line <code>helper_method ...</code> makes them callable from a view.</div>
       <div class="callout callout-warn"><strong>The test environment.</strong> The container sets <code>RAILS_ENV=development</code>. <code>spec/rails_helper.rb</code> now forces <code>test</code>, so plain <code>rspec</code> in the container uses the test database. Without that, rspec hit the dev database and its seeded consumer.</div>
       <div class="callout callout-warn"><strong><code>to_query</code> encodes a space as <code>+</code>.</strong> OAuth needs <code>%20</code>. Encode each name and value with the same function you use for the URL. This one bug failed every captured launch, because they contain spaces.</div>

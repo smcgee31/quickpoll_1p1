@@ -1,14 +1,34 @@
+<% if flash[:alert].present? %>
+  <p role="alert"><%= flash[:alert] %></p>
+<% end %>
 <p>Signed in as <%= current_lti_user.name %> in course <%= current_lti_context.title %>.</p>
 <% if @polls.empty? %>
   <p>No polls yet.</p>
 <% else %>
   <% @polls.each do |poll| %>
+    <% my_vote = @my_votes[poll.id] %>
     <p><strong><%= poll.question %></strong></p>
-    <ul>
-      <% poll.options.each do |option| %>
-        <li><%= option %></li>
+    <% if my_vote %>
+      <p>You voted: <%= poll.options[my_vote.option_index] %></p>
+    <% end %>
+    <% if my_vote || can_create_polls? %>
+      <ul>
+        <% poll.options.each_with_index do |option, i| %>
+          <li><%= option %>: <%= @counts[[poll.id, i]] || 0 %></li>
+        <% end %>
+      </ul>
+    <% end %>
+    <% unless my_vote %>
+      <%= form_with scope: :vote, url: lti_poll_votes_path(poll) do |form| %>
+        <% poll.options.each_with_index do |option, i| %>
+          <p>
+            <%= form.radio_button :option_index, i %>
+            <%= form.label :option_index, option, value: i %>
+          </p>
+        <% end %>
+        <p><%= form.submit "Vote" %></p>
       <% end %>
-    </ul>
+    <% end %>
   <% end %>
 <% end %>
 <% if can_create_polls? %>
