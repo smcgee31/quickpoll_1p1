@@ -6,10 +6,12 @@ Plan: ../../zscratchpads/quickpoll_1p1_to_1p3_plan.md (Developer/zscratchpads)
 - [x] Stage 2: scaffold, schema, models, XML config, seed (code done)
 - [x] Stage 2: XML installed in Canvas, launch reached the stub
 - [x] Stage 3: Lti1p1::SignatureVerifier (19 specs) and Lti1p1::ReplayGuard (15 specs), both in app/services/lti1p1
-- [ ] Stage 4: session, roles, polls  <- IN PROGRESS. Done: LaunchController checks + LaunchRecords + session (/lti/me) + Lti1p1::Roles (25 specs) + role in the session (step 5). + poll page (list + create, require_poll_creator, launch redirects to /lti/polls). + voting (step 7, 154 specs). Stage 4 code done after the live check. Not handled: two simultaneous votes from one person can raise RecordNotUnique (500). Next: /doc-maintainer-project, reflection, then Stage 5 (Basic Outcomes)
-- [ ] Stage 5: Basic Outcomes
-- [ ] Stage 6: Content-Item (optional)
-- [ ] Stage 7: migrate to 1.3 (see "Stage 7 plan: keep a working 1.1 copy" below)
+- [x] Stage 4: session, roles, polls, voting. 154 specs. Checked live in the local Canvas as teacher and student. Not handled: two simultaneous votes from one person can raise RecordNotUnique (500).
+- [ ] Stage 5: Basic Outcomes. SKIPPED on purpose (hackweek time).
+- [ ] Stage 6: Content-Item. SKIPPED on purpose.
+- [x] Stage 7: redefined. The 1.3 tool is a separate app, `quickpoll_1p3` (a copy of this repo). It does not use Canvas's migration feature. See ../../quickpoll_1p3/zscratchpads/TODO.md.
+
+This app is FINAL. Still to do by hand: `git tag v1.1-final` and push the tag.
 
 ## Run it
 - `docker compose up -d` then open http://quickpoll-1p1.inseng.test/lti/config
